@@ -73,7 +73,7 @@ harbor_upload_purging:
   enabled: true
   age: 168h
   interval: 24h
-  dryrun: false
+  dryrun: "false"
 
 harbor_cache:
   enabled: false
