@@ -1,0 +1,36 @@
+---
+- name: Download harbor
+  ansible.builtin.get_url:
+    url: "{{ harbor.download_url }}"
+    dest: "{{ harbor.dir }}/harbor-{{ harbor_version }}.tgz"
+
+- name: Unarchive harbor tgz file
+  ansible.builtin.unarchive:
+    src: "{{ harbor.dir }}/harbor-{{ harbor_version }}.tgz"
+    dest: "{{ harbor.dir }}"
+    remote_src: yes
+
+- name: Copy harbor config
+  ansible.builtin.template:
+    src: "harbor.yml.j2"
+    dest: "{{ harbor.dir }}/harbor/harbor.yml"
+
+- name: Replace color variables
+  ansible.builtin.lineinfile:
+    path: "{{ harbor.dir }}/harbor/common.sh"
+    regexp: "{{ item.regexp }}"
+    line: "{{ item.line }}"
+  loop:
+    - { regexp: '^bold=', line: 'bold=""' }
+    - { regexp: '^underline=', line: 'underline=""' }
+    - { regexp: '^reset=', line: 'reset=""' }
+    - { regexp: '^red=', line: 'red=""' }
+    - { regexp: '^green=', line: 'green=""' }
+    - { regexp: '^white=', line: 'white=""' }
+    - { regexp: '^tan=', line: 'tan=""' }
+    - { regexp: '^blue=', line: 'blue=""' }
+
+- name: Run installation script
+  command: "./install.sh --with-trivy"
+  args:
+    chdir: "{{ harbor.dir }}/harbor/"

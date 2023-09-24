@@ -1,0 +1,29 @@
+---
+- name: Make certs dir
+  file:
+    path: "{{ harbor_https.dir }}"
+    state: directory
+    recurse: yes
+
+- name: Make docker certs dir
+  file:
+    path: "{{ docker.dir }}"
+    state: directory
+    recurse: yes
+
+- name: Copy custom certificate
+  copy:
+    src: "{{ item.src }}"
+    dest: "{{ item.dest }}"
+  loop:
+    - { src: "{{ harbor.domain }}.crt", dest: "{{ harbor_https.dir }}/{{ harbor.domain }}.crt"}
+    - { src: "{{ harbor.domain }}.key", dest: "{{ harbor_https.dir }}/{{ harbor.domain }}.key"}
+    - { src: "{{ harbor.domain }}.cert", dest: "{{ docker.dir }}/{{ harbor.domain }}.cert"}
+    - { src: "{{ harbor.domain }}.key", dest: "{{ docker.dir }}/{{ harbor.domain }}.key"}
+    - { src: "ca.crt", dest: "{{ docker.dir }}/ca.crt"}
+
+- name: Restart docker
+  systemd:
+    name: docker
+    state: restarted
+    enabled: yes

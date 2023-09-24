@@ -1,0 +1,8 @@
+---
+- import_tasks: 1_install_docker.yaml
+  tags: install_docker
+- import_tasks: 2_copy_certificate.yaml
+  tags: copy_certs
+  when: harbor_https.enabled | bool
+- import_tasks: 3_install_harbor.yaml
+  tags: install_harbor

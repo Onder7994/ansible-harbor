@@ -1,0 +1,166 @@
+hostname: {{ harbor.domain }}
+http:
+  port: 80
+{% if harbor_https.enabled %}
+https:
+  port: 443
+  certificate: {{ harbor_https.dir }}/{{ harbor.domain }}.crt
+  private_key: {{ harbor_https.dir }}/{{ harbor.domain }}.key
+{% endif %}
+{% if harbor.internal_tls_enabled %}
+internal_tls:
+  enabled: true
+  dir: {{ harbor.internal_tls_dir | default('/etc/harbor/tls/internal') }}
+{% endif %}
+{% if harbor.external_url_enabled %}
+external_url: {{ harbor.external_url | default('https://reg.mydomain.com:8433') }}
+{% endif %}
+harbor_admin_password: {{ harbor.initial_admin_password }}
+database:
+  password: {{ harbor_database.password }}
+  max_idle_conns: {{ harbor_database.max_idle_conns }}
+  max_open_conns: {{ harbor_database.max_open_conns }}
+  conn_max_lifetime: {{ harbor_database.conn_max_lifetime }}
+  conn_max_idle_time: {{ harbor_database.conn_max_idle_time }}
+data_volume: {{ harbor.dir }}
+{% if harbor_storage_service.enabled %}
+storage_service:
+  ca_bundle: {{ harbor_storage_service.ca_bundle | default('none') }}
+  filesystem:
+    maxthreads: {{ harbor_storage_service.filesystem.maxthreads | default('100') }}
+  redirect:
+    disabled: {{ harbor_storage_service.redirect.disabled | default('false') }}
+{% endif %}
+{% if harbor_trivy.enabled %}
+trivy:
+  ignore_unfixed: {{ harbor_trivy.ignore_unfixed | default('false') }}
+  skip_update: {{ harbor_trivy.skip_update | default('false') }}
+  offline_scan: {{ harbor_trivy.offline_scan | default('false') }}
+  security_check: {{ harbor_trivy.offline_scan | default('vuln') }}
+  insecure: {{ harbor_trivy.insecure | default('false') }}
+  github_token: {{ harbor_trivy.github_token | default('xxx') }}
+{% endif %}
+jobservice:
+  max_job_workers: {{ harbor.max_job_workers }}
+
+notification:
+  webhook_job_max_retry: {{ harbor.webhook_job_max_retry }}
+
+chart:
+  absolute_url: {{ harbor.chart_absolute_url | default('disabled') }}
+log:
+  level: {{ harbor_log.level }}
+  local:
+    rotate_count: {{ harbor_log.rotate_count }}
+    rotate_size: {{ harbor_log.rotate_size }}
+    location: {{ harbor_log.location }}
+{% if harbor_log.external_endpoint.enabled %}
+  external_endpoint:
+    protocol: {{ harbor_log.external_endpoint.protocol | default('tcp') }}
+    host: {{ harbor_log.external_endpoint.host | default('localhost') }}
+    port: {{ harbor_log.external_endpoint.port | default('5140') }}
+{% endif %}
+_version: {{ harbor.migration_version }}
+{% if harbor_external_database.enabled %}
+external_database:
+  harbor:
+    host: {{ harbor_external_database.harbor.host | default('harbor_db_host') }}
+    port: {{ harbor_external_database.harbor.port | default('harbor_db_port') }}
+    db_name: {{ harbor_external_database.harbor.db_name | default('harbor_db_name') }}
+    username: {{ harbor_external_database.harbor.username | default('harbor_db_username') }}
+    password: {{ harbor_external_database.harbor.password | default('harbor_db_password') }}
+    ssl_mode: {{ harbor_external_database.harbor.ssl_mode | default('disable') }}
+    max_idle_conns: {{ harbor_external_database.harbor.max_idle_conns | default('2') }}
+    max_open_conns: {{ harbor_external_database.harbor.max_open_conns | default('0') }}
+  notary_signer:
+    host: {{ harbor_external_database.notary_signer.host | default('notary_signer_db_host') }}
+    port: {{ harbor_external_database.notary_signer.port | default('notary_signer_db_port') }}
+    db_name: {{ harbor_external_database.notary_signer.dn_name | default('notary_signer_db_name') }}
+    username: {{ harbor_external_database.notary_signer.username | default('notary_signer_db_username') }}
+    password: {{ harbor_external_database.notary_signer.password | default('notary_signer_db_password') }}
+    ssl_mode: {{ harbor_external_database.notary_signer.ssl_mode | default('disable') }}
+  notary_server:
+    host: {{ harbor_external_database.notary_server.host | default('notary_server_db_host') }}
+    port: {{ harbor_external_database.notary_server.port | default('notary_server_db_port') }}
+    db_name: {{ harbor_external_database.notary_server.db_name | default('notary_server_db_name') }}
+    username: {{ harbor_external_database.notary_server.username | default('notary_server_db_username') }}
+    password: {{ harbor_external_database.notary_server.password | default('notary_server_db_password') }}
+    ssl_mode: {{ harbor_external_database.notary_server.ssl_mode | default('disable') }}
+{% endif %}
+{% if harbor_redis.enabled %}
+redis:
+  db_index: {{ harbor_redis.db_index | default('0') }}
+  registry_db_index: {{ harbor_redis.registry_db_index | default('1') }}
+  jobservice_db_index: {{ harbor_redis.jobservice_db_index | default('2') }}
+  trivy_db_index: {{ harbor_redis.trivy_db_index | default('5') }}
+  harbor_db_index: {{ harbor_redis.harbor_db_index | default('6') }}
+  cache_layer_db_index: {{ harbor_redis.cache_layer_db_index | default('7') }}
+{% endif %}
+{% if harbor_external_redis.enabled %}
+external_redis:
+  host: {{ harbor_external_redis.host | default('redis:6379') }}
+  password: {{ harbor_external_redis.password | default('') }}
+  registry_db_index: {{ harbor_external_redis.registry_db_index | default('1') }}
+  jobservice_db_index: {{ harbor_external_redis.jobservice_db_index | default('2') }}
+  chartmuseum_db_index: {{ harbor_external_redis.chartmuseum_db_index | default('3') }}
+  trivy_db_index: {{ harbor_external_redis.trivy_db_index | default('5') }}
+  idle_timeout_seconds: {{ harbor_external_redis.idle_timeout_seconds | default('30') }}
+  harbor_db_index: {{ harbor_external_redis.harbor_db_index | default('6') }}
+  cache_layer_db_index: {{ harbor_external_redis.cache_layer_db_index | default('7') }}
+{% endif %}
+{% if harbor.uaa_certs_enabled %}
+uaa:
+  ca_file: {{ harbor.uaa_certs_path | default('/path/to/ca') }}
+{% endif %}
+proxy:
+  http_proxy: {{ harbor_global_proxy.http_proxy }}
+  https_proxy: {{ harbor_global_proxy.https_proxy }}
+  no_proxy: {{ harbor_global_proxy.no_proxy }}
+  components:
+  {% for item in harbor_global_proxy.components %}
+  - {{ item }}
+  {% endfor %}
+{% if harbor_metric.enabled %}
+metric:
+  enabled: true
+  port: {{ harbor_metric.port | default('9090') }}
+  path: {{ harbor_metric.path | default('/metrics') }}
+{% endif %}
+{% if harbor_trace.enabled %}
+trace:
+  enabled: true
+  sample_rate: {{ harbor_trace.sample_rate | default('1') }}
+  namespace: {{ harbor_trace.namespace | default('') }}
+  {% if harbor_trace.attributes.enabled %}
+  attributes:
+    application: {{ harbor_trace.attributes.application | default('harbor') }} 
+  {% endif %}
+  {% if harbor_trace.jaeger.enabled %}
+  jaeger:
+    endpoint: {{ harbor_trace.jaeger.endpoint | default('http://hostname:14268/api/traces') }}
+    username: {{ harbor_trace.jaeger.username | default('') }}
+    password: {{ harbor_trace.jaeger.password | default('') }}
+    agent_host: {{ harbor_trace.jaeger.agent_host | default('') }}
+    agent_port: {{ harbor_trace.jaeger.agent_port | default('6831') }}
+  {% endif %}
+  {% if harbor_trace.otel.enabled %}
+  otel:
+    endpoint: {{ harbor_trace.otel.endpoint | default('hostname:4318') }}
+    url_path: {{ harbor_trace.otel.url_path | default('/v1/traces') }}
+    compression: {{ harbor_trace.otel.compression | default('false') }}
+    insecure: {{ harbor_trace.otel.insecure | default('true') }}
+    timeout: {{ harbor_trace.otel.timeout | default('10') }}
+  {% endif %}
+{% endif %}
+{% if harbor_upload_purging.enabled %}
+upload_purging:
+  enabled: true
+  age: {{ harbor_upload_purging.age | default('168') }}
+  interval: {{ harbor_upload_purging.interval | default('24h') }}
+  dryrun: {{ harbor_upload_purging.dryrun | default('false') }}
+{% endif %}
+{% if harbor_cache.enabled %}
+cache:
+  enabled: true
+  expire_hours: {{ harbor_cache.expire_hours | default('24') }}
+{% endif %}

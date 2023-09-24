@@ -1,0 +1,79 @@
+harbor_version: "v2.7.3"
+harbor:
+  domain: harbor.dev.local
+  migration_version: "2.7.3"
+  download_url: "https://github.com/goharbor/harbor/releases/download/{{ harbor_version }}/harbor-online-installer-{{ harbor_version }}.tgz"
+  dir: "/data"
+  initial_admin_password: "admin"
+  internal_tls_enabled: false
+  external_url_enabled: false
+  max_job_workers: 10
+  webhook_job_max_retry: 10
+  uaa_certs_enabled: false
+
+harbor_https:
+  enabled: true
+  dir: "{{ harbor.dir }}/cert"
+  tmp_cert_dir: "/tmp"
+
+docker:
+  dir: "/etc/docker/certs.d/{{ harbor.domain }}"
+
+harbor_database:
+  password: "admin"
+  max_idle_conns: 100
+  max_open_conns: 900
+  conn_max_lifetime: "5m"
+  conn_max_idle_time: 0
+
+harbor_storage_service:
+  enabled: false
+
+harbor_trivy:
+  enabled: true
+  ignore_unfixed: "false"
+  skip_update: "false"
+  offline_scan: "false"
+  security_check: "vuln"
+  insecure: "false"
+
+harbor_log:
+  level: info
+  rotate_count: 50
+  rotate_size: 200M
+  location: /var/log/harbor
+  external_endpoint:
+    enabled: false
+
+harbor_external_database:
+  enabled: false
+
+harbor_redis:
+  enabled: false
+
+harbor_external_redis:
+  enabled: false
+
+harbor_global_proxy:
+  http_proxy: ""
+  https_proxy: ""
+  no_proxy: ""
+  components:
+    - core
+    - jobservice
+    - trivy
+
+harbor_metric:
+  enabled: true
+
+harbor_trace:
+  enabled: false
+
+harbor_upload_purging:
+  enabled: true
+  age: 168h
+  interval: 24h
+  dryrun: false
+
+harbor_cache:
+  enabled: false
